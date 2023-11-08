@@ -11,20 +11,25 @@ cursor_b.execute('''CREATE TABLE IF NOT EXISTS Books (
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                   book_name TEXT NOT NULL UNIQUE,
                   author TEXT NOT NULL,
-                  available BOOL True
+                  available BOOL True,
+                  booked TEXT DEFAULT 'No'
                 )''')
 
 
 def get_book_id(book_name):
-    conn_b = sqlite3.connect("books.sqlite")
-    cursor_b = conn_b.cursor()
-    cursor_b.execute("SELECT id FROM Books WHERE book_name = ?", (book_name,))
-    book_id = cursor_b.fetchone()
-    conn_b.close()
+    conn = sqlite3.connect("books.sqlite")
+    cursor = conn_b.cursor()
+    cursor.execute("SELECT id FROM Books WHERE book_name = ?", (book_name,))
+    book_id = cursor.fetchone()
+    conn.close()
     if book_id:
         return book_id[0]
     else:
         return None
+
+
+def get_book_info(id_book):
+    return cursor_b.execute(f"SELECT available,booked FROM Books WHERE id={id_book}").fetchone()
 
 
 class MainPage(QMainWindow):
@@ -42,14 +47,11 @@ class MainPage(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         # Добавляем метку с именем пользователя
-        self.username_label = QLabel(f"<a href=''>{self.username}</a>")
+        self.username_label = QLabel(f"{self.username}")
         self.username_label.setAlignment(Qt.AlignCenter)
-        self.username_label.setOpenExternalLinks(True)  # Позволяет открывать ссылку в браузере
-        self.username_label.linkActivated.connect(self.open_user_profile)  # Связываем сигнал с функцией
-        layout.addWidget(self.username_label)
-
+        self.username_label.resize(40, 20)
         # Добавляем метку с названием "Доступные книги"
-        available_books_label = QLabel("Доступные книги:")
+        available_books_label = QLabel("Available books:")
         layout.addWidget(available_books_label)
         # Создаем QListWidget для доступных книг
         self.available_books_listWidget = QListWidget()
@@ -57,7 +59,7 @@ class MainPage(QMainWindow):
         layout.addWidget(self.available_books_listWidget)
 
         # Добавляем метку с названием "Временно недоступно (в пользовании)"
-        unavailable_books_label = QLabel("Временно недоступно (в пользовании):")
+        unavailable_books_label = QLabel("Temporarily unavailable (in use):")
         layout.addWidget(unavailable_books_label)
 
         # Создаем QListWidget для недоступных книг
@@ -78,9 +80,33 @@ class MainPage(QMainWindow):
         book_name = item.text().split(' (')[0]
         # Извлекаем автора
         id_book = get_book_id(book_name)
-        author = cursor_b.execute(f'''SELECT author FROM Books WHERE id={id_book}''').fetchone()[0]
+        conn = sqlite3.connect("books.sqlite")
+        cursor = conn.cursor()
+        author = cursor.execute(f'''SELECT author FROM Books WHERE id={id_book}''').fetchone()[0]
+        conn.close()
         QMessageBox.information(self, "Book Details", f"Selected Book: {book_name} by {author}")
         # Получить статус книги
+        available, booked = get_book_info(id_book)
+        if available == 1 and booked == "No":
+            message = f"You can choose the book '{book_name}'"
+            buttons = QMessageBox.Yes | QMessageBox.No
+            response = QMessageBox.question(self, "reserve book?", message, buttons)
+            if response == QMessageBox.Yes:
+                conn = sqlite3.connect("books.sqlite")
+                cursor = conn_b.cursor()
+                cursor.execute("UPDATE Books SET available = 0, booked = ? WHERE id = ?", (self.username, id_book))
+                conn.commit()
+                conn.close()
+                QMessageBox.information(self, "successful", "successfully booked")
+        elif available == 0 and booked == self.username:
+            message = f"The book '{book_name}' is reserved by you"
+            buttons = QMessageBox.Ok
+            QMessageBox.information(self, "the book is reserved", message, buttons)
+
+        elif available == 0 and booked != self.username:
+            message = f"The book '{book_name}' is reserved by another user"
+            buttons = QMessageBox.Ok
+            QMessageBox.information(self, "the book is reserved", message, buttons)
 
     def get_unavailable_books(self):
         try:

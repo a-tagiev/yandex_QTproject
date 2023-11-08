@@ -57,7 +57,8 @@ class MainPage(QMainWindow):
         self.available_books_listWidget = QListWidget()
         self.available_books_listWidget.itemClicked.connect(self.display_book_details)
         layout.addWidget(self.available_books_listWidget)
-
+        available_books = self.get_available_books()
+        self.populate_available_books(available_books)
         # Добавляем метку с названием "Временно недоступно (в пользовании)"
         unavailable_books_label = QLabel("Temporarily unavailable (in use):")
         layout.addWidget(unavailable_books_label)
@@ -68,7 +69,6 @@ class MainPage(QMainWindow):
         layout.addWidget(self.unavailable_books_listWidget)
 
         # Получаем список доступных и недоступных книг
-        available_books = self.get_available_books()
         unavailable_books = self.get_unavailable_books()
 
         # Заполняем QListWidgets
@@ -90,19 +90,25 @@ class MainPage(QMainWindow):
         if available == 1 and booked == "No":
             message = f"You can choose the book '{book_name}'"
             buttons = QMessageBox.Yes | QMessageBox.No
-            response = QMessageBox.question(self, "reserve book?", message, buttons)
+            response = QMessageBox.question(self, "reserve this book?", message, buttons)
             if response == QMessageBox.Yes:
                 conn = sqlite3.connect("books.sqlite")
-                cursor = conn_b.cursor()
+                cursor = conn.cursor()
                 cursor.execute("UPDATE Books SET available = 0, booked = ? WHERE id = ?", (self.username, id_book))
                 conn.commit()
                 conn.close()
                 QMessageBox.information(self, "successful", "successfully booked")
         elif available == 0 and booked == self.username:
-            message = f"The book '{book_name}' is reserved by you"
-            buttons = QMessageBox.Ok
-            QMessageBox.information(self, "the book is reserved", message, buttons)
-
+            message = f"The book '{book_name}' is reserved by you, you can hand it over"
+            buttons = QMessageBox.Yes | QMessageBox.No
+            response = QMessageBox.question(self, "hand over this book?", message, buttons)
+            if response == QMessageBox.Yes:
+                conn = sqlite3.connect("books.sqlite")
+                cursor = conn.cursor()
+                cursor.execute("UPDATE Books SET available = 1, booked = ? WHERE id = ?", ('No', id_book))
+                conn.commit()
+                conn.close()
+                QMessageBox.information(self, "successful", "successfully handed over")
         elif available == 0 and booked != self.username:
             message = f"The book '{book_name}' is reserved by another user"
             buttons = QMessageBox.Ok

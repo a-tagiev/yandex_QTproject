@@ -24,3 +24,9 @@
 
 ```bash
 git clone ...
+
+2. Установите все необходимые requirements
+```
+```bash
+pip install -r requirements.txt
+```

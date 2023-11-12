@@ -9,7 +9,6 @@ class ProfilePage(QMainWindow):
         self.setGeometry(100, 100, 400, 300)
 
         self.central_widget = QWidget(self)
-        self.setCentralWidget(self.central_widget)
 
         self.username_label = QLabel(f"Username: {username}", self)
         self.username_label.setGeometry(20, 20, 100, 30)
@@ -31,10 +30,3 @@ class ProfilePage(QMainWindow):
         pass
         # Обработчик нажатия кнопки "Delete Profile"
         # Добавьте здесь код для удаления профиля
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    username = "JohnDoe"  # Замените на фактическое имя пользователя
-    profile_window = ProfilePage(username)
-    profile_window.show()
-    sys.exit(app.exec_())

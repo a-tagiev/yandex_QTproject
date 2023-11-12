@@ -1,7 +1,7 @@
 import sqlite3
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QListWidget, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QListWidget, QMessageBox, QPushButton
 
 from logics.profile import ProfilePage
 
@@ -37,7 +37,7 @@ class MainPage(QMainWindow):
         super().__init__()
         self.username = username
         self.setWindowTitle("Library Main Page")
-        self.resize(400, 600)
+        self.resize(400, 800)
 
         # Создаем центральный виджет для размещения содержимого
         central_widget = QWidget(self)
@@ -47,9 +47,10 @@ class MainPage(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         # Добавляем метку с именем пользователя
-        self.username_label = QLabel(f"{self.username}")
-        self.username_label.setAlignment(Qt.AlignCenter)
-        self.username_label.resize(40, 20)
+        self.username_button = QPushButton(f"{self.username}")
+        self.username_button.resize(40, 20)
+        layout.addWidget(self.username_button)
+        self.username_button.clicked.connect(self.open_profile)
         # Добавляем метку с названием "Доступные книги"
         available_books_label = QLabel("Available books:")
         layout.addWidget(available_books_label)
@@ -98,6 +99,8 @@ class MainPage(QMainWindow):
                 conn.commit()
                 conn.close()
                 QMessageBox.information(self, "successful", "successfully booked")
+                self.unavailable_books_listWidget.addItem(item.text())
+                self.available_books_listWidget.takeItem(self.available_books_listWidget.currentRow())
         elif available == 0 and booked == self.username:
             message = f"The book '{book_name}' is reserved by you, you can hand it over"
             buttons = QMessageBox.Yes | QMessageBox.No
@@ -109,6 +112,8 @@ class MainPage(QMainWindow):
                 conn.commit()
                 conn.close()
                 QMessageBox.information(self, "successful", "successfully handed over")
+                self.available_books_listWidget.addItem(item.text())
+                self.unavailable_books_listWidget.takeItem(self.unavailable_books_listWidget.currentRow())
         elif available == 0 and booked != self.username:
             message = f"The book '{book_name}' is reserved by another user"
             buttons = QMessageBox.Ok
@@ -146,7 +151,9 @@ class MainPage(QMainWindow):
         for book in books:
             self.available_books_listWidget.addItem(book)
 
-    def open_user_profile(self):
+    def open_profile(self):
+        # self.hide()  # Скрыть текущее окно
         user_profile_window = ProfilePage(self.username)
-        self.hide()  # Скрыть текущее окно
         user_profile_window.show()
+
+

@@ -42,7 +42,7 @@ class LoginForm(QWidget, Ui_Form):
 
         if user:
             conn.close()
-            self.switch_to_main_window(self.username)
+            self.switch_to_main_window(username)
         else:
             response = QMessageBox.question(self, "Error",
                                             "Incorrect username or password. Do you want to register a new user?",

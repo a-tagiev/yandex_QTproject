@@ -23,9 +23,9 @@
 
 ```bash
 git clone https://github.com/a-tagiev/yandex_QTproject.git
-
-2. Установите все необходимые requirements
 ```
+2. Установите все необходимые requirements
+
 ```bash
 pip install -r requirements.txt
 ```

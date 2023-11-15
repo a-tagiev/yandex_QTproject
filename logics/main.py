@@ -1,11 +1,9 @@
 import sqlite3
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QListWidget, QMessageBox, QPushButton
-
 from logics.profile import ProfilePage
 
-conn_b = sqlite3.connect("books.sqlite")
+conn_b = sqlite3.connect("../database/books.sqlite")
 cursor_b = conn_b.cursor()
 cursor_b.execute('''CREATE TABLE IF NOT EXISTS Books (
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,8 +15,8 @@ cursor_b.execute('''CREATE TABLE IF NOT EXISTS Books (
 
 
 def get_book_id(book_name):
-    conn = sqlite3.connect("books.sqlite")
-    cursor = conn_b.cursor()
+    conn = sqlite3.connect("../database/books.sqlite")
+    cursor = conn.cursor()
     cursor.execute("SELECT id FROM Books WHERE book_name = ?", (book_name,))
     book_id = cursor.fetchone()
     conn.close()
@@ -81,7 +79,7 @@ class MainPage(QMainWindow):
         book_name = item.text().split(' (')[0]
         # Извлекаем автора
         id_book = get_book_id(book_name)
-        conn = sqlite3.connect("books.sqlite")
+        conn = sqlite3.connect("../database/books.sqlite")
         cursor = conn.cursor()
         author = cursor.execute(f'''SELECT author FROM Books WHERE id={id_book}''').fetchone()[0]
         conn.close()
@@ -93,7 +91,7 @@ class MainPage(QMainWindow):
             buttons = QMessageBox.Yes | QMessageBox.No
             response = QMessageBox.question(self, "reserve this book?", message, buttons)
             if response == QMessageBox.Yes:
-                conn = sqlite3.connect("books.sqlite")
+                conn = sqlite3.connect("../database/books.sqlite")
                 cursor = conn.cursor()
                 cursor.execute("UPDATE Books SET available = 0, booked = ? WHERE id = ?", (self.username, id_book))
                 conn.commit()
@@ -106,7 +104,7 @@ class MainPage(QMainWindow):
             buttons = QMessageBox.Yes | QMessageBox.No
             response = QMessageBox.question(self, "hand over this book?", message, buttons)
             if response == QMessageBox.Yes:
-                conn = sqlite3.connect("books.sqlite")
+                conn = sqlite3.connect("../database/books.sqlite")
                 cursor = conn.cursor()
                 cursor.execute("UPDATE Books SET available = 1, booked = ? WHERE id = ?", ('No', id_book))
                 conn.commit()
@@ -121,7 +119,7 @@ class MainPage(QMainWindow):
 
     def get_unavailable_books(self):
         try:
-            conn = sqlite3.connect("books.sqlite")
+            conn = sqlite3.connect("../database/books.sqlite")
             cursor = conn.cursor()
             cursor.execute("SELECT book_name FROM Books WHERE available = 0")
             unavailable_books = cursor.fetchall()
@@ -137,7 +135,7 @@ class MainPage(QMainWindow):
 
     def get_available_books(self):
         try:
-            conn = sqlite3.connect("books.sqlite")
+            conn = sqlite3.connect("../database/books.sqlite")
             cursor = conn.cursor()
             cursor.execute("SELECT book_name FROM Books WHERE available = 1")
             available_books = cursor.fetchall()
@@ -152,8 +150,5 @@ class MainPage(QMainWindow):
             self.available_books_listWidget.addItem(book)
 
     def open_profile(self):
-        # self.hide()  # Скрыть текущее окно
-        user_profile_window = ProfilePage(self.username)
-        user_profile_window.show()
-
-
+        self.user_profile_window = ProfilePage(self.username)
+        self.user_profile_window.show()

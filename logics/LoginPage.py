@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 from design.LoginPage_des import Ui_Form
 from main import MainPage
 
-conn = sqlite3.connect("users.sqlite")
+conn = sqlite3.connect("../database/users.sqlite")
 cursor = conn.cursor()
 
 # Создаем таблицу пользователей, если ее нет

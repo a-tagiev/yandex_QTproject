@@ -2,21 +2,25 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(400, 300)
         self.splitter = QtWidgets.QSplitter(Form)
-        self.splitter.setGeometry(QtCore.QRect(110, 50, 146, 106))
+        self.splitter.setGeometry(QtCore.QRect(130, 50, 146, 140))
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
         self.username_label = QtWidgets.QLabel(self.splitter)
+        self.username_label.setAlignment(Qt.AlignCenter)
         self.username_label.setObjectName("username_label")
         self.login_field = QtWidgets.QLineEdit(self.splitter)
         self.login_field.setText("")
         self.login_field.setObjectName("login_field")
         self.pwd_label = QtWidgets.QLabel(self.splitter)
+        self.pwd_label.setAlignment(Qt.AlignCenter)
         self.pwd_label.setMinimumSize(QtCore.QSize(146, 16))
         self.pwd_label.setObjectName("pwd_label")
         self.password_field = QtWidgets.QLineEdit(self.splitter)
